@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- OFFSET(데이터 건더뛰기) #{현재 페이지 수} * #{한 페이지의 정보 수} => 만큼 건너 뜀 -->
+<mapper namespace="com.example.mybatisexam.dao.DeptDao">
+
+    <select id="findByDnameContaining" parameterType="PageReq" resultType="Dept">
+        SELECT DNO,
+               DNAME,
+               LOC
+        <include refid="common.selectCol"></include>
+        FROM TB_DEPT
+        WHERE DNAME LIKE '%' || #{dname} || '%'
+        OFFSET #{pageReq.page} * #{pageReq.size} ROWS FETCH FIRST #{pageReq.size} ROWS ONLY
+    </select>
+
+    <select id="countByDname" parameterType="String" resultType="long">
+        SELECT COUNT(dno)
+        FROM TB_DEPT
+        WHERE DNAME LIKE '%' || #{dname} || '%'
+    </select>
+
+    <select id="findByID" parameterType="int" resultType="Dept">
+        SELECT DNO,
+               DNAME,
+               LOC
+        <include refid="common.selectCol"></include>
+        FROM TB_DEPT
+        WHERE DNO = #{dno}
+    </select>
+
+    <insert id="insert" parameterType="Dept">
+        INSERT INTO TB_DEPT(
+                            DNO,
+                            DNAME,
+                            LOC,
+                            INSERT_TIME)
+        VALUES (
+                SQ_DEPT.NEXTVAL,
+                #{dname},
+                #{loc},
+                #{insertTime}
+               )
+    </insert>
+
+    <update id="update" parameterType="Dept">
+        UPDATE TB_DEPT
+        SET
+            DNAME = #{dname},
+            LOC = #{loc},
+            UPDATE_TIME = #{updateTime}
+        WHERE DNO = #{dno}
+    </update>
+
+    <delete id="deleteByID" parameterType="int">
+        DELETE FROM TB_DEPT
+        WHERE DNO = #{dno}
+    </delete>
+
+    <select id="existByID" parameterType="int" resultType="long">
+        SELECT COUNT(dno)
+        FROM TB_DEPT
+        WHERE DNO = #{dno}
+    </select>
+    
+    <!-- TODO : Dynamic func #) 1-->
+    <select id="findByDynamicContaining" parameterType="PageReq" resultType="Dept">
+        SELECT DNO,
+               DNAME,
+               LOC
+        <include refid="common.selectCol"></include>
+        FROM TB_DEPT
+        WHERE 1=1
+          <if test="dname != ''">
+              AND DNMAE LIKE '%'|| #{dname} ||'%'
+          </if>
+          <if test="loc != ''">
+              AND LOC LIKE '%'|| #{loc} ||'%'
+          </if>
+        OFFSET #{pageReq.page} * #{pageReq.size} ROWS FETCH FIRST #{pageReq.size} ROWS ONLY
+    </select>
+
+    <!-- TODO : Dynamic func #) 2 -->
+    <select id="countByDynamic" parameterType="String" resultType="long">
+        SELECT COUNT(dno)
+        FROM TB_DEPT
+        WHERE 1=1
+        <if test="dname != ''">
+            AND DNMAE LIKE '%'|| #{dname} ||'%'
+        </if>
+        <if test="loc != ''">
+            AND LOC LIKE '%'|| #{loc} ||'%'
+        </if>
+    </select>
+</mapper>
